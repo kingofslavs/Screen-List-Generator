@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор скринлиста видео</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📽️ Генератор скринлиста видео</h1>
+            <p>Загрузите видео файл и получите превью кадров</p>
+        </header>
+
+        <main class="main">
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">📁</div>
+                        <h3>Перетащите видео файл сюда</h3>
+                        <p>или нажмите для выбора</p>
+                        <input type="file" id="videoInput" accept="video/*" hidden>
+                        <button class="upload-btn" onclick="document.getElementById('videoInput').click()">
+                            Выбрать файл
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section" id="controlsSection" style="display: none;">
+                <div class="video-info" id="videoInfo"></div>
+                
+                <div class="settings">
+                    <div class="setting-group">
+                        <label for="frameCount">Количество кадров:</label>
+                        <input type="range" id="frameCount" min="4" max="100" value="9" step="1">
+                        <span id="frameCountValue">9</span>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="columns">Колонки в сетке:</label>
+                        <select id="columns">
+                            <option value="3">3 колонки</option>
+                            <option value="4">4 колонки</option>
+                            <option value="5">5 колонок</option>
+                            <option value="6">6 колонок</option>
+                            <option value="8">8 колонок</option>
+                            <option value="10">10 колонок</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="gridWidth">Ширина скринлиста:</label>
+                        <input type="range" id="gridWidth" min="800" max="1600" value="1200" step="100">
+                        <span id="gridWidthValue">1200px</span>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="showTimestamps" checked>
+                            Показывать временные метки
+                        </label>
+                    </div>
+                    
+                    <button class="generate-btn" id="generateBtn">Создать скринлист</button>
+                </div>
+            </div>
+
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-header">
+                    <h3>Предварительный просмотр</h3>
+                    <div class="preview-actions">
+                        <button class="download-btn" id="downloadBtn">Скачать как изображение</button>
+                        <button class="reset-btn" id="resetBtn">Загрузить новое видео</button>
+                    </div>
+                </div>
+                <div class="screenshot-grid" id="screenshotGrid"></div>
+            </div>
+
+            <div class="progress-section" id="progressSection" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Обработка видео...</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 Генератор скринлиста видео</p>
+        </footer>
+    </div>
+
+    <video id="videoElement" style="display: none;" controls></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    
+    <script src="script.js"></script>
+</body>
+</html>
