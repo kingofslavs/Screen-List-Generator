@@ -287,6 +287,7 @@ class VideoScreenshotGenerator {
         const rows = Math.ceil(this.screenshots.length / columns);
         const padding = 10;
         const gap = 2;
+        const headerHeight = 55; // Высота заголовка
         
         // Ширина canvas точно соответствует заданной ширине скринлиста
         downloadCanvas.width = gridWidth;
@@ -297,8 +298,8 @@ class VideoScreenshotGenerator {
         const screenshotHeight = Math.round((screenshotWidth / this.video.videoWidth) * this.video.videoHeight);
         const itemHeight = screenshotHeight; // Убираем высоту для временных меток
         
-        // Высота canvas с минимальным заголовком и компактным размещением
-        downloadCanvas.height = rows * itemHeight + (rows - 1) * gap + 2 * padding + 65;
+        // Высота canvas с равномерными отступами со всех сторон
+        downloadCanvas.height = headerHeight + padding + rows * itemHeight + (rows - 1) * gap + padding;
         
         // Фон
         downloadCtx.fillStyle = '#ffffff';
@@ -338,7 +339,7 @@ class VideoScreenshotGenerator {
             const col = i % columns;
             
             const x = padding + col * (screenshotWidth + gap);
-            const y = 55 + padding + row * (itemHeight + gap);
+            const y = headerHeight + padding + row * (itemHeight + gap);
             
             // Загрузить изображение
             const img = new Image();
