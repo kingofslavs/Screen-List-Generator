@@ -170,10 +170,61 @@ class VideoScreenshotGenerator {
     captureFrame(time) {
         return new Promise((resolve, reject) => {
             const video = this.video;
+            const showTimestamps = document.getElementById('showTimestamps').checked;
             
             const onSeeked = () => {
                 try {
+                    // Очищаем canvas и рисуем видео
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     this.ctx.drawImage(video, 0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // Добавляем временную метку на скриншот, если включена опция
+                    if (showTimestamps) {
+                        const timestamp = this.formatTime(time);
+                        
+                        // Настройки для временной метки
+                        const fontSize = Math.max(16, Math.floor(this.canvas.width / 14)); // Адаптивный размер шрифта
+                        const padding = Math.floor(fontSize * 0.4);
+                        
+                        this.ctx.font = `bold ${fontSize}px Arial`;
+                        
+                        // Измеряем размер текста
+                        const textMetrics = this.ctx.measureText(timestamp);
+                        const textWidth = textMetrics.width;
+                        const textHeight = fontSize;
+                        
+                        // Позиция: правый нижний угол с отступом
+                        const x = this.canvas.width - textWidth - padding * 2;
+                        const y = this.canvas.height - padding;
+
+                        // Настраиваем тень для текста
+                        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; // Черная тень с прозрачностью
+                        this.ctx.shadowBlur = 4; // Размытие тени
+                        this.ctx.shadowOffsetX = 4; // Смещение тени по X
+                        this.ctx.shadowOffsetY = 4; // Смещение тени по Y
+
+                        // Устанавливаем выравнивание текста
+                        this.ctx.textAlign = 'left';
+                        this.ctx.textBaseline = 'top';
+
+                        // Рисуем черную обводку текста
+                        this.ctx.strokeStyle = '#000000'; // Черный цвет обводки
+                        this.ctx.lineWidth = 8; // Толщина обводки
+                        this.ctx.lineJoin = 'round'; // Скругленные углы обводки
+                        this.ctx.strokeText(timestamp, x, y - textHeight);
+
+                        // Рисуем полупрозрачный текст временной метки поверх обводки
+                        this.ctx.fillStyle = 'rgba(220, 220, 220, 0.6)';
+                        this.ctx.fillText(timestamp, x, y - textHeight);
+
+                        // Сбрасываем настройки тени и обводки для следующих операций рисования
+                        this.ctx.shadowColor = 'transparent';
+                        this.ctx.shadowBlur = 0;
+                        this.ctx.shadowOffsetX = 0;
+                        this.ctx.shadowOffsetY = 0;
+                        this.ctx.lineWidth = 1;
+                    }
+                    
                     const dataURL = this.canvas.toDataURL('image/jpeg', 0.8);
                     video.removeEventListener('seeked', onSeeked);
                     resolve(dataURL);
@@ -205,12 +256,7 @@ class VideoScreenshotGenerator {
             
             item.appendChild(img);
             
-            if (showTimestamps) {
-                const timestamp = document.createElement('div');
-                timestamp.className = 'screenshot-timestamp';
-                timestamp.textContent = screenshot.formattedTime;
-                item.appendChild(timestamp);
-            }
+            // Убираем отдельную временную метку, так как она теперь встроена в изображение
             
             grid.appendChild(item);
         });
@@ -237,11 +283,10 @@ class VideoScreenshotGenerator {
         const downloadCanvas = document.createElement('canvas');
         const downloadCtx = downloadCanvas.getContext('2d');
         
-        // Расчет размеров canvas
+        // Расчет размеров canvas (убираем высоту для временных меток)
         const rows = Math.ceil(this.screenshots.length / columns);
         const padding = 10;
         const gap = 2;
-        const timestampHeight = showTimestamps ? 20 : 0;
         
         // Ширина canvas точно соответствует заданной ширине скринлиста
         downloadCanvas.width = gridWidth;
@@ -250,7 +295,7 @@ class VideoScreenshotGenerator {
         const availableWidth = gridWidth - 2 * padding - (columns - 1) * gap;
         const screenshotWidth = availableWidth / columns;
         const screenshotHeight = Math.round((screenshotWidth / this.video.videoWidth) * this.video.videoHeight);
-        const itemHeight = screenshotHeight + timestampHeight;
+        const itemHeight = screenshotHeight; // Убираем высоту для временных меток
         
         // Высота canvas с минимальным заголовком и компактным размещением
         downloadCanvas.height = rows * itemHeight + (rows - 1) * gap + 2 * padding + 65;
@@ -287,7 +332,7 @@ class VideoScreenshotGenerator {
             48
         );
         
-        // Отрисовка скриншотов с минимальными отступами
+        // Отрисовка скриншотов
         for (let i = 0; i < this.screenshots.length; i++) {
             const row = Math.floor(i / columns);
             const col = i % columns;
@@ -302,23 +347,8 @@ class VideoScreenshotGenerator {
                 img.src = this.screenshots[i].image;
             });
             
-            // Отрисовать скриншот
+            // Отрисовать скриншот (временная метка уже встроена в изображение)
             downloadCtx.drawImage(img, x, y, screenshotWidth, screenshotHeight);
-            
-            // Компактные временные метки
-            if (showTimestamps) {
-                downloadCtx.fillStyle = '#333';
-                downloadCtx.fillRect(x, y + screenshotHeight, screenshotWidth, timestampHeight);
-                
-                downloadCtx.fillStyle = '#ffffff';
-                downloadCtx.font = 'bold 9px Arial';
-                downloadCtx.textAlign = 'center';
-                downloadCtx.fillText(
-                    this.screenshots[i].formattedTime,
-                    x + screenshotWidth / 2,
-                    y + screenshotHeight + timestampHeight / 2 + 3
-                );
-            }
         }
         
         // Скачать
